@@ -8,6 +8,28 @@ import os
 import re
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
+import shutil  # Add this import at the top of your file
+
+class CustomScrolledText(scrolledtext.ScrolledText):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bind('<Control-Shift-v>', self.paste_with_braces)
+
+    def paste_with_braces(self, event):
+        clipboard_content = clipboard.paste()
+        if os.path.isfile(clipboard_content):
+            self.insert(tk.INSERT, f"{{{clipboard_content}}}\n")
+        else:
+            self.insert(tk.INSERT, clipboard_content)
+
+
+
+    def paste(self, event):
+        clipboard_content = clipboard.paste()
+        if os.path.isfile(clipboard_content):
+            self.insert(tk.INSERT, f"{{{clipboard_content}}}\n")
+        else:
+            self.insert(tk.INSERT, clipboard_content)
 
 
 class ImageLabel(tk.Label):
@@ -37,7 +59,7 @@ class ImageLabel(tk.Label):
 
         # Delete all instances of the placeholder in all text fields
         for widget in app.content_frame.winfo_children():
-            if isinstance(widget, (scrolledtext.ScrolledText, DragDropText)):
+            if isinstance(widget, (CustomScrolledText, DragDropText)):
                 text = widget.get('1.0', 'end')
                 text = re.sub(f"{{{self.image_filename}}}\n", "", text)  # Use regular expression to replace all instances of placeholder with empty string
                 widget.delete('1.0', 'end')
@@ -77,7 +99,7 @@ class ScrollableFrame(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
 
 
-class DragDropText(scrolledtext.ScrolledText):
+class DragDropText(CustomScrolledText):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -126,6 +148,9 @@ class DragDropText(scrolledtext.ScrolledText):
             self.dragged_text = None
 
 
+
+
+
 class IssueReportingApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -169,7 +194,7 @@ class IssueReportingApp(tk.Tk):
         self.dataset.grid(row=5, column=1, pady=5)
 
         ttk.Label(self.content_frame, text="Report Details").grid(row=6, column=0, sticky='w', pady=5)
-        self.report_details = scrolledtext.ScrolledText(self.content_frame, width=40, height=5)
+        self.report_details = CustomScrolledText(self.content_frame, width=40, height=5)
         self.report_details.grid(row=6, column=1, pady=5)
 
         ttk.Label(self.content_frame, text="Is the issue replicable?").grid(row=7, column=0, sticky='w', pady=5)
@@ -177,7 +202,7 @@ class IssueReportingApp(tk.Tk):
         self.replicable.grid(row=7, column=1, pady=5)
 
         ttk.Label(self.content_frame, text="Steps/Troubleshooting").grid(row=8, column=0, sticky='w', pady=5)
-        self.steps = scrolledtext.ScrolledText(self.content_frame, width=40, height=5)
+        self.steps = CustomScrolledText(self.content_frame, width=40, height=5)
         self.steps.grid(row=8, column=1, pady=5)
 
         ttk.Label(self.content_frame, text="Time and timezone of error").grid(row=9, column=0, sticky='w', pady=5)
@@ -206,46 +231,54 @@ class IssueReportingApp(tk.Tk):
         self.exit_button = ttk.Button(self.content_frame, text="Exit", command=self.exit_application)
         self.exit_button.grid(row=14,column=0, columnspan=2, pady=5)
 
+
+
+
+
     def paste_screenshot(self, event):
         try:
-            image = ImageGrab.grabclipboard()
-            if isinstance(image, Image.Image): # Make sure it's an image
+            clipboard_content = clipboard.paste()
+            if os.path.isfile(clipboard_content):
+                # Open the image file and display it
+                image = Image.open(clipboard_content)
                 # Save the image and add it to the list
-                filename = os.path.abspath(f"image_{len(self.images)}.png")
-                image.save(filename)
-                self.images.append(filename)
+                new_filename = os.path.abspath(f"image_{len(self.images)}.png")
+                image.save(new_filename)
+                self.images.append(new_filename)
 
-                # Display the image in the application
+                # Copy the image file to the application's folder
+                shutil.copy(clipboard_content, new_filename)
+
                 image.thumbnail((100, 100)) # Reduce the size of the image
                 photo = ImageTk.PhotoImage(image)
-                img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=filename, image=photo, app=self)
+                img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=new_filename, image=photo, app=self)
                 img_label.image = photo
                 img_label.pack() # Use pack instead of place to allow the images to stack
 
                 # Insert placeholder into active text field
                 active_widget = self.focus_get()
-                if isinstance(active_widget, scrolledtext.ScrolledText):
-                    active_widget.insert(tk.END, f"\n{{{filename}}}\n")
+                if isinstance(active_widget, CustomScrolledText):
+                    active_widget.insert(tk.END, f"\n{{{new_filename}}}\n") # Always wrap filename in curly braces
             else:
-                filename = clipboard.paste()
-                if os.path.isfile(filename):
-                    # Open the image file and display it
-                    image = Image.open(filename)
+                # Handle pasted image data
+                image = ImageGrab.grabclipboard()
+                if isinstance(image, Image.Image): # Make sure it's an image
                     # Save the image and add it to the list
-                    new_filename = os.path.abspath(f"image_{len(self.images)}.png")
-                    image.save(new_filename)
-                    self.images.append(new_filename)
+                    filename = os.path.abspath(f"image_{len(self.images)}.png")
+                    image.save(filename)
+                    self.images.append(filename)
 
+                    # Display the image in the application
                     image.thumbnail((100, 100)) # Reduce the size of the image
                     photo = ImageTk.PhotoImage(image)
-                    img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=new_filename, image=photo, app=self)
+                    img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=filename, image=photo, app=self)
                     img_label.image = photo
                     img_label.pack() # Use pack instead of place to allow the images to stack
 
                     # Insert placeholder into active text field
                     active_widget = self.focus_get()
-                    if isinstance(active_widget, scrolledtext.ScrolledText):
-                        active_widget.insert(tk.END, f"\n{{{new_filename}}}\n")  # Wrap filename in curly braces
+                    if isinstance(active_widget, CustomScrolledText):
+                        active_widget.insert(tk.END, f"\n{{{filename}}}\n") # Always wrap filename in curly braces
         except Exception as e:
             print(e) # This will print the actual error message
             messagebox.showerror('Error', 'Could not paste the image!')
@@ -255,9 +288,6 @@ class IssueReportingApp(tk.Tk):
 
 
 
-
-
-    
     def add_image(self):
         filename = filedialog.askopenfilename(initialdir="/", title="Select Image", filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
         if filename:

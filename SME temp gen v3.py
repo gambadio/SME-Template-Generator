@@ -35,16 +35,23 @@ class ImageLabel(tk.Label):
         # Delete the image file
         os.remove(self.image_filename)
 
-        # Delete the placeholder in all text fields
+        # Delete all instances of the placeholder in all text fields
         for widget in app.content_frame.winfo_children():
             if isinstance(widget, (scrolledtext.ScrolledText, DragDropText)):
                 text = widget.get('1.0', 'end')
-                text = text.replace(f"{{{self.image_filename}}}\n", "")
+                text = re.sub(f"{{{self.image_filename}}}\n", "", text)  # Use regular expression to replace all instances of placeholder with empty string
                 widget.delete('1.0', 'end')
                 widget.insert('1.0', text)
 
+        # Delete corresponding ImageLabel in preview
+        for widget in app.image_frame.scrollable_frame.winfo_children():
+            if isinstance(widget, ImageLabel) and widget.image_filename == self.image_filename:
+                widget.destroy()
+
         # Destroy the ImageLabel widget
         self.destroy()
+
+
 
 
 
@@ -238,10 +245,14 @@ class IssueReportingApp(tk.Tk):
                     # Insert placeholder into active text field
                     active_widget = self.focus_get()
                     if isinstance(active_widget, scrolledtext.ScrolledText):
-                        active_widget.insert(tk.END, f"\n{{{new_filename}}}\n")
+                        active_widget.insert(tk.END, f"\n{{{new_filename}}}\n")  # Wrap filename in curly braces
         except Exception as e:
             print(e) # This will print the actual error message
             messagebox.showerror('Error', 'Could not paste the image!')
+
+
+
+
 
 
 

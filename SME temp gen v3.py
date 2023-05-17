@@ -8,7 +8,9 @@ import os
 import re
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
-import shutil  # Add this import at the top of your file
+import shutil 
+from docx.shared import Inches
+
 
 class CustomScrolledText(scrolledtext.ScrolledText):
     def __init__(self, *args, **kwargs):
@@ -72,11 +74,6 @@ class ImageLabel(tk.Label):
 
         # Destroy the ImageLabel widget
         self.destroy()
-
-
-
-
-
 
 class ScrollableFrame(tk.Frame):
     def __init__(self, parent):
@@ -146,9 +143,6 @@ class DragDropText(CustomScrolledText):
             # Reset drag state
             self.drag_start_pos = None
             self.dragged_text = None
-
-
-
 
 
 class IssueReportingApp(tk.Tk):
@@ -231,10 +225,6 @@ class IssueReportingApp(tk.Tk):
         self.exit_button = ttk.Button(self.content_frame, text="Exit", command=self.exit_application)
         self.exit_button.grid(row=14,column=0, columnspan=2, pady=5)
 
-
-
-
-
     def paste_screenshot(self, event):
         try:
             clipboard_content = clipboard.paste()
@@ -283,24 +273,17 @@ class IssueReportingApp(tk.Tk):
             print(e) # This will print the actual error message
             messagebox.showerror('Error', 'Could not paste the image!')
 
+def add_image(self):
+    filename = filedialog.askopenfilename(initialdir="/", title="Select Image", filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
+    if filename:
+        image = Image.open(filename)
+        image.thumbnail((200, 200)) # You can adjust this size as needed
+        photo = ImageTk.PhotoImage(image)
 
-
-
-
-
-    def add_image(self):
-        filename = filedialog.askopenfilename(initialdir="/", title="Select Image", filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
-        if filename:
-            image = Image.open(filename)
-            image.thumbnail((200, 200))
-            photo = ImageTk.PhotoImage(image)
-
-            self.images.append(filename)
-            label = ImageLabel(self.content_frame, image_filename=filename, image=photo)
-            label.image = photo
-            label.pack()
-
-
+        self.images.append(filename)
+        img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=filename, image=photo, app=self)
+        img_label.image = photo
+        img_label.pack()
 
 
     def generate_word_document(self):
@@ -318,44 +301,27 @@ class IssueReportingApp(tk.Tk):
         text = self.report_details.get('1.0', 'end')
         lines = text.split('\n')
         for line in lines:
+            # Check if line is a file path wrapped in curly braces
             if line.startswith('{') and line.endswith('}'):
-                image_filename = line[1:-1]
-                if os.path.isfile(image_filename):
-                    doc.add_picture(image_filename)
-                else:
-                    doc.add_paragraph(line)
+                image_filename = line[1:-1]  # Remove the curly braces
             else:
-                doc.add_paragraph(line)
-        
-        doc.add_paragraph(f"Is the issue replicable?: {self.replicable.get()}")
-        
-        # Parse text from steps text field and insert images at appropriate locations
-        text = self.steps.get('1.0', 'end')
-        lines = text.split('\n')
-        for line in lines:
-            if line.startswith('{') and line.endswith('}'):
-                image_filename = line[1:-1]
-                if os.path.isfile(image_filename):
-                    doc.add_picture(image_filename)
-                else:
-                    doc.add_paragraph(line)
-            else:
-                doc.add_paragraph(line)
-        
-        doc.add_paragraph(f"Time and timezone of error: {self.error_time.get()}")
+                image_filename = line  # Use the line as is
 
-        # Parse text from issue_description text field and insert images at appropriate locations
-        text = self.issue_description.get('1.0', 'end')
-        lines = text.split('\n')
-        for line in lines:
-            if line.startswith('{') and line.endswith('}'):
-                image_filename = line[1:-1]
-                if os.path.isfile(image_filename):
-                    doc.add_picture(image_filename)
-                else:
-                    doc.add_paragraph(line)
+            # Replace forward slashes with backslashes in the file path
+            image_filename = image_filename.replace('/', '\\')
+
+            # Create a new paragraph and a new run
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run()
+
+            if os.path.isfile(image_filename):
+                # Add the image to the run
+                run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
             else:
-                doc.add_paragraph(line)
+                # Add the text to the run
+                run.add_text(line)
+        
+
 
         # Save the Word document
         try:

@@ -75,25 +75,7 @@ class ImageLabel(tk.Label):
         # Destroy the ImageLabel widget
         self.destroy()
 
-class ScrollableFrame(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent, bg='lightblue')  # Add the color to the Frame
-        self.canvas = tk.Canvas(self, bg='lightblue')  # Add the color to the Canvas
-        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.scrollable_frame = tk.Frame(self.canvas, bg='lightblue')  # Add the color to the scrollable frame
 
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(
-                scrollregion=self.canvas.bbox("all")
-            )
-        )
-
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.scrollbar.pack(side="right", fill="y")
 
 
 class DragDropText(CustomScrolledText):
@@ -156,8 +138,7 @@ class IssueReportingApp(tk.Tk):
         self.images = []
 
     def init_ui(self):
-        self.image_frame = ScrollableFrame(self)
-        self.image_frame.pack(side='right', fill='both', expand=True)
+
 
         self.content_frame = tk.Frame(self)
         self.content_frame.pack(side='left', fill='both', expand=True)
@@ -228,6 +209,8 @@ class IssueReportingApp(tk.Tk):
     def paste_screenshot(self, event):
         try:
             clipboard_content = clipboard.paste()
+            # Replace forward slashes with backslashes in the file path
+            clipboard_content = clipboard_content.replace('/', '\\')
             if os.path.isfile(clipboard_content):
                 # Open the image file and display it
                 image = Image.open(clipboard_content)
@@ -238,12 +221,6 @@ class IssueReportingApp(tk.Tk):
 
                 # Copy the image file to the application's folder
                 shutil.copy(clipboard_content, new_filename)
-
-                image.thumbnail((100, 100)) # Reduce the size of the image
-                photo = ImageTk.PhotoImage(image)
-                img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=new_filename, image=photo, app=self)
-                img_label.image = photo
-                img_label.pack() # Use pack instead of place to allow the images to stack
 
                 # Insert placeholder into active text field
                 active_widget = self.focus_get()
@@ -258,13 +235,6 @@ class IssueReportingApp(tk.Tk):
                     image.save(filename)
                     self.images.append(filename)
 
-                    # Display the image in the application
-                    image.thumbnail((100, 100)) # Reduce the size of the image
-                    photo = ImageTk.PhotoImage(image)
-                    img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=filename, image=photo, app=self)
-                    img_label.image = photo
-                    img_label.pack() # Use pack instead of place to allow the images to stack
-
                     # Insert placeholder into active text field
                     active_widget = self.focus_get()
                     if isinstance(active_widget, CustomScrolledText):
@@ -273,18 +243,18 @@ class IssueReportingApp(tk.Tk):
             print(e) # This will print the actual error message
             messagebox.showerror('Error', 'Could not paste the image!')
 
-def add_image(self):
-    filename = filedialog.askopenfilename(initialdir="/", title="Select Image", filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
-    if filename:
-        image = Image.open(filename)
-        image.thumbnail((200, 200)) # You can adjust this size as needed
-        photo = ImageTk.PhotoImage(image)
 
-        self.images.append(filename)
-        img_label = ImageLabel(self.image_frame.scrollable_frame, image_filename=filename, image=photo, app=self)
-        img_label.image = photo
-        img_label.pack()
+    def add_image(self):
+        filename = filedialog.askopenfilename(initialdir="/", title="Select Image", filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
+        if filename:
+            image = Image.open(filename)
+            image.thumbnail((200, 200))
+            photo = ImageTk.PhotoImage(image)
 
+            self.images.append(filename)
+            label = ImageLabel(self.content_frame, image_filename=filename, image=photo)
+            label.image = photo
+            label.pack()
 
     def generate_word_document(self):
         doc = docx.Document()

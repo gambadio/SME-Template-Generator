@@ -10,7 +10,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import shutil 
 from docx.shared import Inches
-
+import win32com.client
 
 class CustomScrolledText(scrolledtext.ScrolledText):
     def __init__(self, *args, **kwargs):
@@ -290,6 +290,23 @@ class IssueReportingApp(tk.Tk):
             else:
                 # Add the text to the run
                 run.add_text(line)
+        
+
+        #ADD THIS TO ANOTHER PLACE!!!!!!
+        # Save the Word document to a temporary file
+        temp_filename = 'temp.docx'
+        doc.save(temp_filename)
+
+        # Open the Word document and copy its content to the clipboard
+        word = win32com.client.Dispatch('Word.Application')
+        doc = word.Documents.Open(os.path.abspath(temp_filename))
+        doc.Content.Copy()
+        doc.Close()
+
+        # Delete the temporary file
+        os.remove(temp_filename)
+
+        messagebox.showinfo('Info', 'Content copied to clipboard!')
         
 
 

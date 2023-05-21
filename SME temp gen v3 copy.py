@@ -166,8 +166,9 @@ class IssueReportingApp(tk.Tk):
         doc.add_paragraph(f"Account name: {self.account_name.get()}")
         doc.add_paragraph(f"Impacted user's ID(s): {self.user_ids.get()}")
         doc.add_paragraph(f"Environment, Application, Sub Product, Dataset: {self.dataset.get()}")
-        
-        
+
+        # Add "Report Details:" before parsing text from report_details attribute
+        report_details_para = doc.add_paragraph("Report Details: ")
         # Parse text from report_details text field and insert images at appropriate locations
         text = self.report_details.get('1.0', 'end')
         lines = text.split('\n')
@@ -181,19 +182,20 @@ class IssueReportingApp(tk.Tk):
             # Replace forward slashes with backslashes in the file path
             image_filename = image_filename.replace('/', '\\')
 
-            # Create a new paragraph and a new run
-            paragraph = doc.add_paragraph()
-            run = paragraph.add_run()
+            # Create a new run in the report_details_para paragraph
+            run = report_details_para.add_run()
 
             if os.path.isfile(image_filename):
                 # Add the image to the run
                 run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
             else:
                 # Add the text to the run
-                run.add_text(line)
+                run.add_text(line + '\n')
 
         doc.add_paragraph(f"Is the issue replicable? {self.replicable.get()}")
 
+        # Add "Steps/Troubleshooting:" before parsing text from steps attribute
+        steps_para = doc.add_paragraph("Steps/Troubleshooting: ")
         # Parse text from steps text field and insert images at appropriate locations
         text = self.steps.get('1.0', 'end')
         lines = text.split('\n')
@@ -207,20 +209,20 @@ class IssueReportingApp(tk.Tk):
             # Replace forward slashes with backslashes in the file path
             image_filename = image_filename.replace('/', '\\')
 
-            # Create a new paragraph and a new run
-            paragraph = doc.add_paragraph()
-            run = paragraph.add_run()
+            # Create a new run in the steps_para paragraph
+            run = steps_para.add_run()
 
             if os.path.isfile(image_filename):
                 # Add the image to the run
                 run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
             else:
                 # Add the text to the run
-                run.add_text(line)
+                run.add_text(line + '\n')
 
         doc.add_paragraph(f"Time and timezone of error: {self.error_time.get()}")
-    
 
+        # Add "Describe the issue:" before parsing text from issue_description attribute
+        issue_description_para = doc.add_paragraph("Describe the issue: ")
         # Parse text from issue_description text field and insert images at appropriate locations
         text = self.issue_description.get('1.0', 'end')
         lines = text.split('\n')
@@ -234,16 +236,15 @@ class IssueReportingApp(tk.Tk):
             # Replace forward slashes with backslashes in the file path
             image_filename = image_filename.replace('/', '\\')
 
-            # Create a new paragraph and a new run
-            paragraph = doc.add_paragraph()
-            run = paragraph.add_run()
+            # Create a new run in the issue_description_para paragraph
+            run = issue_description_para.add_run()
 
             if os.path.isfile(image_filename):
                 # Add the image to the run
                 run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
             else:
                 # Add the text to the run
-                run.add_text(line)      
+                run.add_text(line + '\n')
 
         # Save the Word document
         try:
@@ -251,6 +252,7 @@ class IssueReportingApp(tk.Tk):
             messagebox.showinfo('Info', 'Word document created successfully!')
         except Exception as e:
             messagebox.showerror('Error', 'Could not save the Word document!')
+
 
     def generate_copy_ready_text(self):
         doc = docx.Document()
@@ -263,6 +265,8 @@ class IssueReportingApp(tk.Tk):
         doc.add_paragraph(f"Environment, Application, Sub Product, Dataset: {self.dataset.get()}")
         
 
+        # Add "Steps/Troubleshooting:" before parsing text from steps attribute
+        doc.add_paragraph("Steps/Troubleshooting:")
         # Parse text from report_details text field and insert images at appropriate locations
         text = self.report_details.get('1.0', 'end')
         lines = text.split('\n')

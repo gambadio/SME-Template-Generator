@@ -53,43 +53,45 @@ class IssueReportingApp(tk.Tk):
         # Create input fields for the required information
         ttk.Label(self.content_frame, text="Req-Number").grid(row=0, column=0, sticky='w', pady=5)
         self.req_number = ttk.Entry(self.content_frame)
-        self.req_number.grid(row=0, column=1, pady=5)
+        self.req_number.grid(row=0, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Country").grid(row=2, column=0, sticky='w', pady=5)
         self.country = ttk.Entry(self.content_frame) 
-        self.country.grid(row=2, column=1, pady=5)
+        self.country.grid(row=2, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Account name").grid(row=3, column=0, sticky='w', pady=5)
         self.account_name = ttk.Entry(self.content_frame)
-        self.account_name.grid(row=3, column=1, pady=5)
+        self.account_name.grid(row=3, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Impacted user's ID(s)").grid(row=4, column=0, sticky='w', pady=5)
         self.user_ids = ttk.Entry(self.content_frame)
-        self.user_ids.grid(row=4, column=1, pady=5)
+        self.user_ids.grid(row=4, column=1, pady=5, padx=(100,0))
 
-        ttk.Label(self.content_frame, text="Environment, Application, Sub Product, Dataset").grid(row=5, column=0, sticky='w', pady=5)
-        self.dataset = ttk.Entry(self.content_frame)
-        self.dataset.grid(row=5, column=1, pady=5)
+        # Split label into two lines
+        ttk.Label(self.content_frame, text="Environment, Application,\nSub Product,\nDataset").grid(row=5,column=0,pady=(10,0),sticky='w')
+        # Make dataset field an Entry field with a larger width
+        self.dataset = CustomScrolledText(self.content_frame, width=40, height=2)
+        self.dataset.grid(row = 5,column = 1,pady= 5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Report Details").grid(row=6, column=0, sticky='w', pady=5)
         self.report_details = CustomScrolledText(self.content_frame, width=40, height=5)
-        self.report_details.grid(row=6, column=1, pady=5)
+        self.report_details.grid(row=6, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Is the issue replicable?").grid(row=7, column=0, sticky='w', pady=5)
         self.replicable = ttk.Combobox(self.content_frame, values=['YES', 'NO'])
-        self.replicable.grid(row=7, column=1, pady=5)
+        self.replicable.grid(row=7, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Steps/Troubleshooting").grid(row=8, column=0, sticky='w', pady=5)
         self.steps = CustomScrolledText(self.content_frame, width=40, height=5)
-        self.steps.grid(row=8, column=1, pady=5)
+        self.steps.grid(row=8, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Time and timezone of error").grid(row=9, column=0, sticky='w', pady=5)
         self.error_time = ttk.Entry(self.content_frame)
-        self.error_time.grid(row=9,column=1, pady=5)
+        self.error_time.grid(row=9,column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Describe the issue").grid(row=10, column=0, sticky='w', pady=5)
         self.issue_description = CustomScrolledText(self.content_frame, width=40, height=5)
-        self.issue_description.grid(row=10, column=1, pady=5)
+        self.issue_description.grid(row=10, column=1, pady=5, padx=(100,0))
 
         # Image display area
         self.image_label = tk.Label(self.content_frame) 
@@ -165,7 +167,31 @@ class IssueReportingApp(tk.Tk):
         doc.add_paragraph(f"Country: {self.country.get()}")
         doc.add_paragraph(f"Account name: {self.account_name.get()}")
         doc.add_paragraph(f"Impacted user's ID(s): {self.user_ids.get()}")
-        doc.add_paragraph(f"Environment, Application, Sub Product, Dataset: {self.dataset.get()}")
+
+        # Add "Report Details:" before parsing text from report_details attribute
+        report_details_para = doc.add_paragraph("Environment, Application, Sub Product, Dataset: ")
+        # Parse text from report_details text field and insert images at appropriate locations
+        text = self.dataset.get('1.0', 'end')
+        lines = text.split('\n')
+        for line in lines:
+            # Check if line is a file path wrapped in curly braces
+            if line.startswith('{') and line.endswith('}'):
+                image_filename = line[1:-1]  # Remove the curly braces
+            else:
+                image_filename = line  # Use the line as is
+
+            # Replace forward slashes with backslashes in the file path
+            image_filename = image_filename.replace('/', '\\')
+
+            # Create a new run in the report_details_para paragraph
+            run = report_details_para.add_run()
+
+            if os.path.isfile(image_filename):
+                # Add the image to the run
+                run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
+            else:
+                # Add the text to the run
+                run.add_text(line + '\n')
 
         # Add "Report Details:" before parsing text from report_details attribute
         report_details_para = doc.add_paragraph("Report Details: ")

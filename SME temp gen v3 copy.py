@@ -109,8 +109,8 @@ class IssueReportingApp(tk.Tk):
         self.account_name = ttk.Entry(self.content_frame)
         self.account_name.grid(row=3, column=1, pady=5, padx=(100,0))
 
-        ttk.Label(self.content_frame, text="Impacted user's ID(s)").grid(row=4, column=0, sticky='w', pady=5)
-        self.user_ids = ttk.Entry(self.content_frame)
+        ttk.Label(self.content_frame, text="Impacted user's ID(s)").grid(row=4, column=0, sticky='w', pady=5,)
+        self.user_ids = ttk.Entry(self.content_frame, width=40)
         self.user_ids.grid(row=4, column=1, pady=5, padx=(100,0))
 
         # Split label into two lines
@@ -209,7 +209,10 @@ class IssueReportingApp(tk.Tk):
         doc = docx.Document()
 
         # Add content to the document
-        doc.add_paragraph(f"Req-Number: {self.req_number.get()}")
+        para = doc.add_paragraph()
+        para.add_run("Req-Number: ").bold = True
+        para.add_run(self.req_number.get())
+
         doc.add_paragraph(f"Country: {self.country.get()}")
         doc.add_paragraph(f"Account name: {self.account_name.get()}")
         doc.add_paragraph(f"Impacted user's ID(s): {self.user_ids.get()}")

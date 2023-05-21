@@ -35,29 +35,69 @@ class CustomScrolledText(scrolledtext.ScrolledText):
 
 
 class IssueReportingApp(tk.Tk):
+
+    def on_content_frame_configure(self, event):
+        # Set scroll region of Canvas widget
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+
+    def on_canvas_configure(self, event):
+        # Resize inner window of Canvas widget
+        self.canvas.itemconfig(1, width=event.width)
+
+    def on_mouse_wheel(self, event):
+        # Scroll Canvas widget vertically using mouse wheel
+        self.canvas.yview_scroll(-int(event.delta/120), 'units')
+
+
     def __init__(self):
         super().__init__()
+
+        # Set window title
+        self.title("Issue Reporting")
+
+        # Create a Canvas widget and a Scrollbar widget
+        self.canvas = tk.Canvas(self)
+        self.scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Create a new frame to hold all the content of the app
+        self.content_frame = tk.Frame(self.canvas)
+
+        # Create a window inside the Canvas to hold the content_frame
+        self.canvas.create_window((0, 0), window=self.content_frame, anchor='nw')
+
+        # Pack the Canvas and Scrollbar widgets
+        self.canvas.pack(side='left', fill='both', expand=True)
+        self.scrollbar.pack(side='right', fill='y')
 
         # Initialize UI elements
         self.init_ui()
 
-        # List to store images
-        self.images = []
+        # Bind events for scrolling
+        self.content_frame.bind('<Configure>', self.on_content_frame_configure)
+        self.canvas.bind('<Configure>', self.on_canvas_configure)
+        self.canvas.bind_all('<MouseWheel>', self.on_mouse_wheel)
 
     def init_ui(self):
 
+        # Set window title
+        self.title("SME Template")
 
-        self.content_frame = tk.Frame(self)
-        self.content_frame.pack(side='left', fill='both', expand=True)
+        # Set initial size of main window
+        self.geometry('800x700')
 
         # Create input fields for the required information
         ttk.Label(self.content_frame, text="Req-Number").grid(row=0, column=0, sticky='w', pady=5)
         self.req_number = ttk.Entry(self.content_frame)
+        # Add padding to the left side of the req_number field
         self.req_number.grid(row=0, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Country").grid(row=2, column=0, sticky='w', pady=5)
         self.country = ttk.Entry(self.content_frame) 
+        # Add padding to the left side of the country field
         self.country.grid(row=2, column=1, pady=5, padx=(100,0))
+
+
 
         ttk.Label(self.content_frame, text="Account name").grid(row=3, column=0, sticky='w', pady=5)
         self.account_name = ttk.Entry(self.content_frame)

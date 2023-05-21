@@ -167,6 +167,7 @@ class IssueReportingApp(tk.Tk):
         doc.add_paragraph(f"Impacted user's ID(s): {self.user_ids.get()}")
         doc.add_paragraph(f"Environment, Application, Sub Product, Dataset: {self.dataset.get()}")
         
+        
         # Parse text from report_details text field and insert images at appropriate locations
         text = self.report_details.get('1.0', 'end')
         lines = text.split('\n')
@@ -190,9 +191,102 @@ class IssueReportingApp(tk.Tk):
             else:
                 # Add the text to the run
                 run.add_text(line)
+
+        doc.add_paragraph(f"Is the issue replicable? {self.replicable.get()}")
+
+        # Parse text from steps text field and insert images at appropriate locations
+        text = self.steps.get('1.0', 'end')
+        lines = text.split('\n')
+        for line in lines:
+            # Check if line is a file path wrapped in curly braces
+            if line.startswith('{') and line.endswith('}'):
+                image_filename = line[1:-1]  # Remove the curly braces
+            else:
+                image_filename = line  # Use the line as is
+
+            # Replace forward slashes with backslashes in the file path
+            image_filename = image_filename.replace('/', '\\')
+
+            # Create a new paragraph and a new run
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run()
+
+            if os.path.isfile(image_filename):
+                # Add the image to the run
+                run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
+            else:
+                # Add the text to the run
+                run.add_text(line)
+
+        doc.add_paragraph(f"Time and timezone of error: {self.error_time.get()}")
+    
+
+        # Parse text from issue_description text field and insert images at appropriate locations
+        text = self.issue_description.get('1.0', 'end')
+        lines = text.split('\n')
+        for line in lines:
+            # Check if line is a file path wrapped in curly braces
+            if line.startswith('{') and line.endswith('}'):
+                image_filename = line[1:-1]  # Remove the curly braces
+            else:
+                image_filename = line  # Use the line as is
+
+            # Replace forward slashes with backslashes in the file path
+            image_filename = image_filename.replace('/', '\\')
+
+            # Create a new paragraph and a new run
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run()
+
+            if os.path.isfile(image_filename):
+                # Add the image to the run
+                run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
+            else:
+                # Add the text to the run
+                run.add_text(line)      
+
+        # Save the Word document
+        try:
+            doc.save(self.req_number.get() + '.docx')
+            messagebox.showinfo('Info', 'Word document created successfully!')
+        except Exception as e:
+            messagebox.showerror('Error', 'Could not save the Word document!')
+
+    def generate_copy_ready_text(self):
+        doc = docx.Document()
+
+        # Add content to the document
+        doc.add_paragraph(f"Req-Number: {self.req_number.get()}")
+        doc.add_paragraph(f"Country: {self.country.get()}")
+        doc.add_paragraph(f"Account name: {self.account_name.get()}")
+        doc.add_paragraph(f"Impacted user's ID(s): {self.user_ids.get()}")
+        doc.add_paragraph(f"Environment, Application, Sub Product, Dataset: {self.dataset.get()}")
         
 
-        #ADD THIS TO ANOTHER PLACE!!!!!!
+        # Parse text from report_details text field and insert images at appropriate locations
+        text = self.report_details.get('1.0', 'end')
+        lines = text.split('\n')
+        for line in lines:
+            # Check if line is a file path wrapped in curly braces
+            if line.startswith('{') and line.endswith('}'):
+                image_filename = line[1:-1]  # Remove the curly braces
+            else:
+                image_filename = line  # Use the line as is
+
+            # Replace forward slashes with backslashes in the file path
+            image_filename = image_filename.replace('/', '\\')
+
+            # Create a new paragraph and a new run
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run()
+
+            if os.path.isfile(image_filename):
+                # Add the image to the run
+                run.add_picture(image_filename, width=Inches(6.0))  # Adjust the width as needed
+            else:
+                # Add the text to the run
+                run.add_text(line)
+
         # Save the Word document to a temporary file
         temp_filename = 'temp.docx'
         doc.save(temp_filename)
@@ -207,37 +301,6 @@ class IssueReportingApp(tk.Tk):
         os.remove(temp_filename)
 
         messagebox.showinfo('Info', 'Content copied to clipboard!')
-        
-
-
-        # Save the Word document
-        try:
-            doc.save(self.req_number.get() + '.docx')
-            messagebox.showinfo('Info', 'Word document created successfully!')
-        except Exception as e:
-            messagebox.showerror('Error', 'Could not save the Word document!')
-
-
-
-
-
-    def generate_copy_ready_text(self):
-        # Prepare text using input fields
-        output = f"Req-Number: {self.req_number.get()}\n"
-        output += f"Country: {self.country.get()}\n"
-        output += f"Account name: {self.account_name.get()}\n"
-        output += f"Impacted user's ID(s): {self.user_ids.get()}\n"
-        output += f"Environment, Application, Sub Product, Dataset: {self.dataset.get()}\n"
-        output += f"Report Details: {self.report_details.get('1.0', 'end')}\n"
-        output += f"Is the issue replicable?: {self.replicable.get()}\n"
-        output += f"Steps/Troubleshooting: {self.steps.get('1.0', 'end')}\n"
-        output += f"Time and timezone of error: {self.error_time.get()}\n"
-        output += f"Describe the issue: {self.issue_description.get('1.0', 'end')}\n"
-
-
-        # Copy text to clipboard
-        clipboard.copy(output)
-        messagebox.showinfo('Info', 'Text copied to clipboard!')
 
     def exit_application(self):
         msg_box = messagebox.askquestion('Exit Application', 'Are you sure you want to exit the application?', icon='warning')
@@ -245,6 +308,7 @@ class IssueReportingApp(tk.Tk):
             self.destroy()
         else:
             messagebox.showinfo('Return', 'You will now return to the application screen')
+
 
 if __name__ == '__main__':
     app = IssueReportingApp()

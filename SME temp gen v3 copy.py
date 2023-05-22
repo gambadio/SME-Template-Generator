@@ -110,17 +110,17 @@ class IssueReportingApp(tk.Tk):
         self.account_name.grid(row=3, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Impacted user's ID(s)").grid(row=4, column=0, sticky='w', pady=5,)
-        self.user_ids = ttk.Entry(self.content_frame, width=40)
+        self.user_ids = ttk.Entry(self.content_frame, width=60)
         self.user_ids.grid(row=4, column=1, pady=5, padx=(100,0))
 
         # Split label into two lines
         ttk.Label(self.content_frame, text="Environment, Application,\nSub Product,\nDataset").grid(row=5,column=0,pady=(10,0),sticky='w')
         # Make dataset field an Entry field with a larger width
-        self.dataset = CustomScrolledText(self.content_frame, width=40, height=2)
+        self.dataset = CustomScrolledText(self.content_frame, width=60, height=3)
         self.dataset.grid(row = 5,column = 1,pady= 5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Report Details").grid(row=6, column=0, sticky='w', pady=5)
-        self.report_details = CustomScrolledText(self.content_frame, width=40, height=5)
+        self.report_details = CustomScrolledText(self.content_frame, width=60, height=7)
         self.report_details.grid(row=6, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Is the issue replicable?").grid(row=7, column=0, sticky='w', pady=5)
@@ -128,7 +128,7 @@ class IssueReportingApp(tk.Tk):
         self.replicable.grid(row=7, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Steps/Troubleshooting").grid(row=8, column=0, sticky='w', pady=5)
-        self.steps = CustomScrolledText(self.content_frame, width=40, height=5)
+        self.steps = CustomScrolledText(self.content_frame, width=60, height=7)
         self.steps.grid(row=8, column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Time and timezone of error").grid(row=9, column=0, sticky='w', pady=5)
@@ -136,7 +136,7 @@ class IssueReportingApp(tk.Tk):
         self.error_time.grid(row=9,column=1, pady=5, padx=(100,0))
 
         ttk.Label(self.content_frame, text="Describe the issue").grid(row=10, column=0, sticky='w', pady=5)
-        self.issue_description = CustomScrolledText(self.content_frame, width=40, height=5)
+        self.issue_description = CustomScrolledText(self.content_frame, width=60, height=7)
         self.issue_description.grid(row=10, column=1, pady=5, padx=(100,0))
 
         # Image display area
